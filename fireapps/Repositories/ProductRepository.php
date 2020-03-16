@@ -7,7 +7,6 @@ use FireApps\Models\Product;
 
 class ProductRepository extends BaseRepository
 {
-
     /**
      * Specify Model class name
      *
@@ -16,10 +15,5 @@ class ProductRepository extends BaseRepository
     function model()
     {
         return Product::class;
-    }
-
-    public function createMulti($arr)
-    {
-        return Product::insert($arr);
     }
 }

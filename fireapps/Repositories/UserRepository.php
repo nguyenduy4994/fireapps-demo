@@ -7,7 +7,6 @@ use FireApps\Models\User;
 
 class UserRepository extends BaseRepository
 {
-
     /**
      * Specify Model class name
      *

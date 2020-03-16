@@ -1,9 +1,9 @@
 {
-    "name": "laravel/laravel",
+    "name": "fireapps/duy_training",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "FireApps training",
     "keywords": [
-        "framework",
+        "fireapps",
         "laravel"
     ],
     "license": "MIT",

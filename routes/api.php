@@ -22,5 +22,7 @@ Route::name('shopify.')->prefix('shopify')->namespace('\FireApps\Api')->group(fu
 
     Route::middleware('auth:api')->group(function() {
         Route::get('/products', 'ShopApi@products')->name('shop.products');
+
+        Route::post('/products/{product_id}/message', 'ShopApi@addMessage')->name('shop.message');
     });
 });

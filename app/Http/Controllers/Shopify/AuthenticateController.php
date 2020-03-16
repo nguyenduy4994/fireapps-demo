@@ -11,7 +11,7 @@ use Auth;
 
 class AuthenticateController extends Controller
 {
-    public function index(Request $request, ShopRepository $shop_repository, UserRepository $user_repository)
+    public function index(Request $request, ShopRepository $shopRepository, UserRepository $userRepository)
     {
         if (!Shopify::verifyRequest($request->all())) {
             return redirect('/')->with('errors', 'Failed');
@@ -30,10 +30,10 @@ class AuthenticateController extends Controller
             'token' => $shop_token->access_token,
             'token_valid' => true
         ];
-        $shop = $shop_repository->updateOrCreateShop(Shopify::getShopNameFromURL($shop_info->myshopify_domain), $shop_meta);
+        $shop = $shopRepository->updateOrCreate(['name' => $shop_name], $shop_meta);
         $user = $shop->user;
         if (!$user) {
-            $user = $user_repository->create([
+            $user = $userRepository->create([
                 'name' => $shop_info->shop_owner,
                 'email' => $shop_info->email,
                 'password' => bcrypt(\Str::random(10))

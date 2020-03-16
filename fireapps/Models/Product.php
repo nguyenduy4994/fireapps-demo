@@ -10,7 +10,8 @@ class Product extends Model
         'id',
         'shop_id',
         'title',
-        'vendor'
+        'vendor',
+        'message'
     ];
 
     public function shop()

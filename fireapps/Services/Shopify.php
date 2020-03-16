@@ -17,10 +17,13 @@ class Shopify implements ShopifyContract
 
             $response = $client->post($uri, [
                 'headers' => [
-                    'Content-Type' => 'application/json'
+                    'Content-Type' => 'application/json',
+                    'X-Shopify-Access-Token' => $token
                 ],
                 'body' => json_encode($body_arr)
             ]);
+
+            return json_decode((string)$response->getBody());
         } catch (Exception $ex) {
             throw $ex;
         }
@@ -38,8 +41,7 @@ class Shopify implements ShopifyContract
                 ]
             ]);
 
-            $obj = json_decode((string)$response->getBody());
-            return $obj;
+            return json_decode((string)$response->getBody());
         } catch (Exception $ex) {
             throw $ex;
         }
@@ -63,37 +65,37 @@ class Shopify implements ShopifyContract
     /**
      * Generate Shopify Auth Url
      *
-     * @param string $shop_url
+     * @param string $shopUrl
      *
      * @return string Shopify Authorized URL
      */
-    public function shopifyAuthUrl($shop_url)
+    public function shopifyAuthUrl($shopUrl)
     {
         $client_id = config('shopify.api_key');
         $scopes = config('shopify.scope');
         $redirect_uri = $this->redirectUrl();
 
-        return sprintf("https://%s.myshopify.com/admin/oauth/authorize?client_id=%s&scope=%s&redirect_uri=%s", $shop_url, $client_id, $scopes, $redirect_uri);
+        return sprintf("https://%s.myshopify.com/admin/oauth/authorize?client_id=%s&scope=%s&redirect_uri=%s", $shopUrl, $client_id, $scopes, $redirect_uri);
     }
 
     /**
      * Convert data from Shopify
      *
-     * @param string|array $request_data
+     * @param string|array $data
      *
      * @return array|boolean
      */
-    private function convertRequestData($request_data)
+    private function convertRequestData($data)
     {
         $tmp = [];
-        if (is_string($request_data)) {
-            $each = explode('&', $request_data);
+        if (is_string($data)) {
+            $each = explode('&', $data);
             foreach ($each as $e) {
                 list($key, $val) = explode('=', $e);
                 $tmp[$key] = $val;
             }
-        } elseif (is_array($request_data)) {
-            $tmp = $request_data;
+        } elseif (is_array($data)) {
+            $tmp = $data;
         } else {
             return false;
         }
@@ -104,31 +106,31 @@ class Shopify implements ShopifyContract
     /**
      * Verify request return from Shopify
      *
-     * @param array $request_data
+     * @param array $data
      *
      * @return boolean
      */
-    public function verifyRequest($request_data)
+    public function verifyRequest($data)
     {
-        $request_data = $this->convertRequestData($request_data);
-        if ($request_data == false)
+        $data = $this->convertRequestData($data);
+        if ($data == false)
             return false;
 
         // Timestamp check; 1 hour tolerance
-        if (($request_data['timestamp'] - time() > 3600))
+        if (($data['timestamp'] - time() > 3600))
             return false;
 
-        if (!array_key_exists('hmac', $request_data))
+        if (!array_key_exists('hmac', $data))
             return false;
 
         // HMAC Validation
         $queryString = http_build_query([
-            'code'      => $request_data['code'],
-            'shop'      => $request_data['shop'],
-            'timestamp' => $request_data['timestamp']
+            'code'      => $data['code'],
+            'shop'      => $data['shop'],
+            'timestamp' => $data['timestamp']
         ]);
         $calculated  = hash_hmac('sha256', $queryString, config('shopify.api_secret_key'));
-        $match       = $request_data['hmac'];
+        $match       = $data['hmac'];
 
         return $calculated === $match;
     }
@@ -136,27 +138,27 @@ class Shopify implements ShopifyContract
     /**
      * Get Shop name from shop URL
      *
-     * @param string $shop_url
+     * @param string $shopUrl
      *
      * @return string Shop name only
      */
-    public function getShopNameFromURL($shop_url)
+    public function getShopNameFromURL($shopUrl)
     {
-        return str_replace('.myshopify.com', '', $shop_url);
+        return str_replace('.myshopify.com', '', $shopUrl);
     }
 
     /**
      * Get Token from Shopify
      *
-     * @param string $shop_url
+     * @param string $shopUrl
      * @param string $code Authorized code from Shopify
      *
      * @return object|false
      */
-    public function getAccessToken($shop_url, $code)
+    public function getAccessToken($shopUrl, $code)
     {
         try {
-            $url = sprintf(ShopifyURL::TOKEN, $shop_url);
+            $url = sprintf(ShopifyURL::TOKEN, $shopUrl);
 
             $client = new Client();
             $response = $client->post($url, [
@@ -182,7 +184,7 @@ class Shopify implements ShopifyContract
     /**
      * Get Shop URL generate token
      *
-     * @param string $shop_url
+     * @param string $shopUrl
      *
      * @return string Shop Token URL
      */
@@ -191,19 +193,49 @@ class Shopify implements ShopifyContract
         return vsprintf($url_format, $agrs);
     }
 
-    public function getShopInfo($shop_url, $token)
+    public function getShopInfo($shopUrl, $token)
     {
-        $url = $this->generateUrl(ShopifyURL::SHOP, $shop_url);
+        $url = $this->generateUrl(ShopifyURL::SHOP, $shopUrl);
         $shop = $this->get($url, $token);
 
         return $shop->shop;
     }
 
-    public function getProducts($shop_url, $token)
+    public function getProducts($shopUrl, $token)
     {
-        $url = $this->generateUrl(ShopifyURL::PRODUCTS, $shop_url);
+        $url = $this->generateUrl(ShopifyURL::PRODUCTS, $shopUrl);
         $response = $this->get($url, $token);
 
         return $response->products;
+    }
+
+    public function addMetaMessage($product, $message)
+    {
+        $shop = $product->shop;
+        $url = $this->generateUrl(ShopifyURL::PRODUCT_META, $shop->domain_url, $product->id);
+        $data = new \stdClass;
+        $data->metafield = (object) [
+            'namespace' => 'fireapps',
+            'key' => 'message',
+            'value' => $message,
+            'value_type' => 'string'
+        ];
+       
+        $response = $this->post($url, $shop->token, $data);
+        return $response;
+    }
+
+    public function getMetaMessage($product)
+    {
+        $shop = $product->shop;
+
+        $url = $this->generateUrl(ShopifyURL::PRODUCT_META, $shop->domain_url, $product->id) . '?namespace=fireapps&key=message';
+        $response = $this->get($url, $shop->token);
+        if (!(property_exists($response, 'metafields') && count($response->metafields) > 0)) {
+            return '';
+        }
+
+        $meta = $response->metafields[0];
+        return $meta->value;
     }
 }

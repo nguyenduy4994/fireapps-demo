@@ -18,6 +18,7 @@ class CreateProductsTable extends Migration
             $table->bigInteger('shop_id')->unsigned();
             $table->string('title');
             $table->string('vendor');
+            $table->string('message');
             $table->timestamps();
 
             $table->foreign('shop_id')->references('id')->on('shops');

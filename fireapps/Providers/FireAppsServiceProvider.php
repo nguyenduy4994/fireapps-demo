@@ -17,8 +17,10 @@ class FireAppsServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // Only for development with ngrok
         URL::forceScheme('https');
 
+        // Register service Shopify
         $this->app->singleton(Shopify::class, function($app) {
             return new Shopify();
         });

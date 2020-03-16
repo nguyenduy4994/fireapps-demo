@@ -1865,8 +1865,84 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      products: [],
+      product: {},
+      message: ''
+    };
+  },
   mounted: function mounted() {
+    var _this = this;
+
     if (localStorage.is_logged == false || typeof localStorage.token == "undefined" || typeof localStorage.user == "undefined") {
       this.$router.push({
         name: "auth.form"
@@ -1874,14 +1950,38 @@ __webpack_require__.r(__webpack_exports__);
       return;
     }
 
+    console.log($("#loading-icon"));
+    $("#loading-icon").hide();
     this.axios.defaults.headers.common["Authorization"] = "Bearer " + localStorage.token;
     this.axios.get("/api/user").then(function (res) {
       console.log(res.data);
     });
     this.axios.get("/api/shopify/products").then(function (res) {
+      _this.products = res.data;
       console.log("Data product");
       console.log(res.data);
     });
+  },
+  methods: {
+    showModalMessage: function showModalMessage(product) {
+      this.product = product;
+      this.message = product.message;
+      $("#messageModal").modal({
+        backdrop: 'static'
+      });
+    },
+    addMessage: function addMessage() {
+      var _this2 = this;
+
+      $("#loading-icon").show();
+      this.axios.post("/api/shopify/products/" + this.product.id + "/message", {
+        message: this.message
+      }).then(function (res) {
+        _this2.product.message = _this2.message;
+        $("#loading-icon").hide();
+        $("#messageModal").modal('hide');
+      });
+    }
   }
 });
 
@@ -37553,9 +37653,194 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "container" })
+  return _c("div", { staticClass: "container" }, [
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col" }, [
+        _c("table", { staticClass: "table" }, [
+          _vm._m(0),
+          _vm._v(" "),
+          _c(
+            "tbody",
+            [
+              _vm.products.length == 0
+                ? _c("tr", [
+                    _c("td", { attrs: { colspan: "4" } }, [
+                      _vm._v("Không có sản phẩm")
+                    ])
+                  ])
+                : _vm._e(),
+              _vm._v(" "),
+              _vm._l(_vm.products, function(product) {
+                return _c("tr", { key: product.id }, [
+                  _c("td", [_vm._v(_vm._s(product.id))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(product.title))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(product.vendor))]),
+                  _vm._v(" "),
+                  _c("td", [_vm._v(_vm._s(product.message))]),
+                  _vm._v(" "),
+                  _c("td", [
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-sm btn-primary",
+                        on: {
+                          click: function($event) {
+                            return _vm.showModalMessage(product)
+                          }
+                        }
+                      },
+                      [_vm._v("Add message")]
+                    )
+                  ])
+                ])
+              })
+            ],
+            2
+          )
+        ])
+      ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "messageModal",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "messageModalLabel",
+          "aria-hidden": "true"
+        }
+      },
+      [
+        _c(
+          "div",
+          { staticClass: "modal-dialog", attrs: { role: "document" } },
+          [
+            _c("div", { staticClass: "modal-content" }, [
+              _vm._m(1),
+              _vm._v(" "),
+              _c("div", { staticClass: "modal-body" }, [
+                _c("form", [
+                  _c("div", { staticClass: "form-group" }, [
+                    _c("label", { attrs: { for: "txt-message" } }, [
+                      _vm._v(
+                        "Message for product " + _vm._s(_vm.product.title) + ":"
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.message,
+                          expression: "message"
+                        }
+                      ],
+                      staticClass: "form-control",
+                      attrs: { id: "txt-message", type: "text" },
+                      domProps: { value: _vm.message },
+                      on: {
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.message = $event.target.value
+                        }
+                      }
+                    })
+                  ])
+                ])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "modal-footer" }, [
+                _c("img", {
+                  attrs: {
+                    src: "/loading.svg",
+                    height: "36px",
+                    id: "loading-icon"
+                  }
+                }),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-secondary",
+                    attrs: { type: "button", "data-dismiss": "modal" }
+                  },
+                  [_vm._v("Close")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-primary",
+                    attrs: { type: "button" },
+                    on: {
+                      click: function($event) {
+                        return _vm.addMessage()
+                      }
+                    }
+                  },
+                  [_vm._v("\n            Save changes\n            ")]
+                )
+              ])
+            ])
+          ]
+        )
+      ]
+    )
+  ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("ID")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Title")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Vendor")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Message")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Action")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-header" }, [
+      _c(
+        "h5",
+        { staticClass: "modal-title", attrs: { id: "messageModalLabel" } },
+        [_vm._v("Add message")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "close",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close"
+          }
+        },
+        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+      )
+    ])
+  }
+]
 render._withStripped = true
 
 

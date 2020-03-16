@@ -7,7 +7,6 @@ use FireApps\Models\Shop;
 
 class ShopRepository extends BaseRepository
 {
-
     /**
      * Specify Model class name
      *
@@ -16,11 +15,5 @@ class ShopRepository extends BaseRepository
     function model()
     {
         return Shop::class;
-    }
-
-    function updateOrCreateShop($name, $meta)
-    {
-        $shop = Shop::updateOrCreate(['name' => $name], $meta);
-        return $shop;
     }
 }

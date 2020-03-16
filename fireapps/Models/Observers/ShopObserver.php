@@ -6,13 +6,19 @@ use FireApps\Models\Shop;
 
 class ShopObserver
 {
+    /**
+     * Event happen when updating model Shop
+     *
+     * @param Shop $shop
+     *
+     * @return void
+     */
     public function updating(Shop $shop) 
     {
-        $old_token = $shop->getOriginal('token');
+        $originalToken = $shop->getOriginal('token');
 
-        if ($shop->token != $old_token) {
+        if ($shop->token != $originalToken) {
             $shop->products_synced = false;
-            \Debugbar::info("new token");
         }
     }
 }
